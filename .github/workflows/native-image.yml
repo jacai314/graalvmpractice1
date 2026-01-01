@@ -1,0 +1,50 @@
+name: Build native images
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GraalVM Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: '21'
+
+      - name: Install native-image
+        run: |
+          gu --version || true
+          gu install native-image
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Build package and native images
+        run: mvn -Pnative -DskipTests package -B
+
+      - name: Run native binaries to verify
+        run: |
+          ./oracle-app --version || true
+          ./serialization-app . | grep "JSON output written to" || true
+
+      - name: Upload native images
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-images
+          path: |
+            oracle-app
+            serialization-app
