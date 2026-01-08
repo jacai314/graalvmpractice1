@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +32,7 @@ public class ListDir {
         long[] size = {0};
         long[] count = {0};
 
-        try (Stream<Path> paths = Files.walk(Paths.get(dirName))) {
+        try (Stream<Path> paths = Files.walk(Path.of(dirName))) {
             paths.filter(Files::isRegularFile).forEach((Path p) -> {
                 File f = p.toFile();
                 size[0] += f.length();
@@ -46,11 +45,11 @@ public class ListDir {
     public static final String humanReadableByteCountBin(final long bytes) {
         long b = bytes == Long.MIN_VALUE ? Long.MAX_VALUE : Math.abs(bytes);
         return b < 1024L ? bytes + " B"
-                : b <= 0xfffccccccccccccL >> 40 ? String.format("%.1f KiB", bytes / 0x1p10)
-                : b <= 0xfffccccccccccccL >> 30 ? String.format("%.1f MiB", bytes / 0x1p20)
-                : b <= 0xfffccccccccccccL >> 20 ? String.format("%.1f GiB", bytes / 0x1p30)
-                : b <= 0xfffccccccccccccL >> 10 ? String.format("%.1f TiB", bytes / 0x1p40)
-                : b <= 0xfffccccccccccccL ? String.format("%.1f PiB", (bytes >> 10) / 0x1p40)
-                : String.format("%.1f EiB", (bytes >> 20) / 0x1p40);
+                : b <= 0xfffccccccccccccL >> 40 ? "%.1f KiB".formatted(bytes / 0x1p10)
+                : b <= 0xfffccccccccccccL >> 30 ? "%.1f MiB".formatted(bytes / 0x1p20)
+                : b <= 0xfffccccccccccccL >> 20 ? "%.1f GiB".formatted(bytes / 0x1p30)
+                : b <= 0xfffccccccccccccL >> 10 ? "%.1f TiB".formatted(bytes / 0x1p40)
+                : b <= 0xfffccccccccccccL ? "%.1f PiB".formatted((bytes >> 10) / 0x1p40)
+                : "%.1f EiB".formatted((bytes >> 20) / 0x1p40);
     }
 }
